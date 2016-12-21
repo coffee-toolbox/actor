@@ -20,8 +20,7 @@ class Dict
 			@$dictionary[k]
 
 	$delete: (k)->
-		if @$dictionary[k]?
-			delete @$dictionary[k]
+		delete @$dictionary[k]
 
 class Actor extends Dict
 	constructor: ->
