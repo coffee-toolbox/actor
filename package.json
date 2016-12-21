@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/coffee-toolbox/actor#readme",
   "dependencies": {
-    "@coffee-toolbox/logger": "^1.0.0"
+    "@coffee-toolbox/logger": "^1.0.1"
   },
   "devDependencies": {
     "coffee-loader": "^0.7.2",
