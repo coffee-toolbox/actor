@@ -113,9 +113,9 @@ asker.logger.log adder.$call 'sync_add', 4, 6
 # Asker => Adder:
 #   async_add
 #  : { a: 3, b: 5 }
-# 10 'Asker'
+# 'Asker' 10
 # Adder => Asker:
 #   answer
 #  : 8
-# 8 'Asker'
+# 'Asker' 8
 ```
