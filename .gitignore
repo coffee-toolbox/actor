@@ -1,0 +1,12 @@
+# Logs
+npm-debug.log*
+
+# Dependency directories
+node_modules
+
+# Vim swap
+*.swp
+
+# Test
+
+test/*.js

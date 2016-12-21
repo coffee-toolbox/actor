@@ -1,0 +1,29 @@
+{
+  "name": "@coffee-toolbox/actor",
+  "version": "1.0.0",
+  "description": "Actor model in Coffeescript",
+  "main": "Actor.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coffee-toolbox/actor.git"
+  },
+  "keywords": [
+    "actor"
+  ],
+  "author": "James Ruan <ruanbeihong@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/coffee-toolbox/actor/issues"
+  },
+  "homepage": "https://github.com/coffee-toolbox/actor#readme",
+  "dependencies": {
+    "@coffee-toolbox/logger": "^1.0.0"
+  },
+  "devDependencies": {
+    "coffee-loader": "^0.7.2",
+    "coffee-script": "^1.12.2"
+  }
+}
