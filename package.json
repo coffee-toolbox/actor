@@ -1,6 +1,6 @@
 {
   "name": "@coffee-toolbox/actor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Actor model in Coffeescript",
   "main": "Actor.coffee",
   "scripts": {
