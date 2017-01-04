@@ -1,5 +1,5 @@
+'use strict'
 {Logger} = require('@coffee-toolbox/logger')
-"use strict"
 class Dict
 	constructor: ->
 		@$dictionary = {}
@@ -65,15 +65,17 @@ class Actor extends Dict
 		@$next()
 
 	$next: ->
-		f = @$mail_box.shift()
-		if f?
+		read_mail = =>
+			f = @$mail_box.shift()
+			@logger.assert f?
 			Promise.resolve().then f
+		if @$mail_box.length > 0
+			read_mail()
+		else if @$waiting.length > 0
+			@logger.error 'repeated $next(). Memory leak?'
 		else
-			@$waiting.push =>
-				Promise.resolve().then @$mail_box.shift()
-			if @$waiting.length > 1
-				@logger.warn 'repeated $@next()\n
-				A memory leak? Queue length:', @$waiting.length
+			@$waiting.push ->
+				read_mail()
 
 	$call: (name, args...)->
 		@logger.assert @$call_handlers[name]?, name, 'not registered'
@@ -82,8 +84,10 @@ class Actor extends Dict
 	$send_to: (t, type, value)->
 		@logger.assert t instanceof Actor
 		@logger.assert type?
-		@logger.info "=> #{t.constructor.name}:\n  #{type}\n :", value
+		@logger.debug "=> #{t.constructor.name}:\n  #{type}\n :", value
+		t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
 		t.$mail_box.push =>
+			t.logger.debug "<= #{this.constructor.name}:\n  #{type}\n :", value
 			t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
 			t.$msg_handlers[type] this, value
 		if t.$waiting.length > 0

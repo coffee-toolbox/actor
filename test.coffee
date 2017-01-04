@@ -1,37 +1,36 @@
 {Actor} = require('./Actor.coffee')
 
-class TestActor extends Actor
+class Adder extends Actor
 	constructor: ->
 		super
-
-	start: ->
-		@$start (
+		@$start
 			call:
-				show: @show
+				sync_add: @add_sync
 			receive:
-				test: @receive
-		)
+				async_add: @add_async
 
-	show: =>
-		@logger.log this
+	add_sync: (a, b)=>
+		a + b
 
-	receive: (from, msg)=>
-		from
-		@$next()
+	add_async: (from, msg)=>
+		setTimeout =>
+			@$send_to from, 'answer',  msg.a + msg.b
+			# @$next() # to handle next msg after answering
+		, 500
+		@$next() # to handle next msg immediately
 
-	return: (from, msg)=>
-		@$next()
+class Asker extends Actor
+	constructor: ->
+		super
+		@$start
+			receive:
+				answer: (from, v)=>
+					@logger.log v
+					@$next()
 
-a = new TestActor()
-b = new TestActor()
-
-a.start()
-b.start()
-setTimeout ->
-	b.$send_to a, 'test', {something: "later test string"}
-, 2000
-a.$call 'show'
-setTimeout ->
-	b.$send_to a, 'test', {something: "earlier test string"}
-, 1000
-
+asker = new Asker()
+adder = new Adder()
+asker.$send_to adder, 'async_add',
+	a: 3
+	b: 5
+asker.logger.log adder.$call 'sync_add', 4, 6
