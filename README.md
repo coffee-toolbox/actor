@@ -34,7 +34,7 @@ $values: -> [v] | []
 Start the Actor by waiting on async messages.
 
 `reg.receive` is for registration of async message handlers.
-A handler should be end by a @$next() call to handle next message.
+A handler should be end by a `@$next()` call to handle next message.
 `reg.call` is just for registration of normal sync methods.
 
 ```coffeescript
