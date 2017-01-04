@@ -17,7 +17,7 @@ It ruined my productivity for a whole three days!
 
 For any one who values his life, please be away from npm.
 
-
+----
 
 ## Actor as a dictionary
 
