@@ -1,6 +1,24 @@
 # Actor
 Actor model in Coffeescript
 
+### NOTE
+Do NOT download from npm!
+
+Just add the dependency that use https git repo url as a version.
+
+    `"@coffee-toolbox/actor": "https://github.com/coffee-toolbox/actor.git"`
+
+npm is evil that it limit the publish of more than one project.
+And its restriction on version number is terrible for fast development that
+require local reference. (npm link sucks!)
+[why npm link sucks](https://github.com/webpack/webpack/issues/554)
+
+It ruined my productivity for a three whole days!
+
+For any one who values its life, please be away from npm.
+
+
+
 ## Actor as a dictionary
 
 `Actor` has following method for dictionary operations:
@@ -35,6 +53,8 @@ Start the Actor by waiting on async messages.
 
 `reg.receive` is for registration of async message handlers.
 A handler should be end by a `@$next()` call to handle next message.
+Fail to do so will result in a unresponsive actor. The development
+version reports the sending and receving of the message for debugging.
 `reg.call` is just for registration of normal sync methods.
 
 ```coffeescript
@@ -53,8 +73,8 @@ A handler should be end by a `@$next()` call to handle next message.
 
 Wait for the next async message and handler it by registered handler.
 
-Usually, there's only one `$next` waiting for message. Two or more are likely
-to be a memory leak. There will be a warning for that.
+Usually, there's only one `$next` waiting for message. Two or more is likely
+to be a memory leak. There will be a error reporting that.
 
 `$call: (name, args...)-> any`
 
