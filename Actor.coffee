@@ -23,10 +23,16 @@ class Dict
 		delete @$dictionary[k]
 
 class Actor extends Dict
-	constructor: ->
+	constructor: (config)->
 		super
-		@$id = @constructor.name
-		@logger = new Logger @$id
+		@$id = if config?.id
+			@constructor.name + ' ' + config.id
+		else
+			@constructor.name
+		@logger = if config?.debug
+			new Logger @$id
+		else
+			new Logger @$id, Logger.ASSERT
 		@$msg_handlers = null
 		@$call_handlers = null
 		@$mail_box = []
@@ -82,12 +88,11 @@ class Actor extends Dict
 		@$call_handlers[name] args...
 
 	$send_to: (t, type, value)->
-		@logger.assert t instanceof Actor
-		@logger.assert type?
-		@logger.debug "=> #{t.constructor.name}:\n  #{type}\n :", value
+		@logger.assert type?, 'msg type is not defined'
+		@logger.debug "=> #{t.$id}:\n  #{type}\n :", value
 		t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
 		t.$mail_box.push =>
-			t.logger.debug "<= #{this.constructor.name}:\n  #{type}\n :", value
+			t.logger.debug "<= #{@$id}:\n  #{type}\n :", value
 			t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
 			t.$msg_handlers[type] this, value
 		if t.$waiting.length > 0

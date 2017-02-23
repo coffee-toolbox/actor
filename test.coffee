@@ -2,7 +2,7 @@
 
 class Adder extends Actor
 	constructor: ->
-		super
+		super {debug: true}
 		@$start
 			call:
 				sync_add: @add_sync

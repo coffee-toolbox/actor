@@ -87,8 +87,11 @@ The message would be handled by functions registered with `reg.receive` in
 `$start`. The function is asynchronously called once `$next()` is called.
 
 ## Other
-`$id` used as Logger prefix. Default is class name.
-`logger` a Logger with prefix `$id`
+A `config` object can be passed to the Actor's constructor.
+`config.id` is used as suffix of `@$id`.
+`config.debug` is a boolean to enable debug printing.
+`@$id` used as Logger prefix. Default is `@constructor.name + config.id`.
+`@logger` a Logger with prefix `$id`.
 
 # Example Usage:
 
@@ -97,7 +100,7 @@ The message would be handled by functions registered with `reg.receive` in
 
 class Adder extends Actor
 	constructor: ->
-		super
+		super {debug: true}
 		@$start
 			call:
 				sync_add: @add_sync
@@ -130,18 +133,14 @@ asker.$send_to adder, 'async_add',
 	b: 5
 asker.logger.log adder.$call 'sync_add', 4, 6
 
-# Asker => Adder:
-#   async_add
-#  : { a: 3, b: 5 }
-# Asker 10
-# Adder <= Asker:
-#   async_add
-#  : { a: 3, b: 5 }
-# Adder => Asker:
-#   answer
-#  : 8
-# Asker <= Adder:
-#   answer
-#  : 8
-# Asker 8
+###
+Asker 10
+Adder <= Asker:
+  async_add
+ : { a: 3, b: 5 }
+Adder => Asker:
+  answer
+ : 8
+Asker 8
+###
 ```
