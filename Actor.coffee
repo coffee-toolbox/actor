@@ -98,5 +98,13 @@ class Actor extends Dict
 		if t.$waiting.length > 0
 			t.$waiting.shift()()
 
+	$terminate: ->
+		# flush all messages
+		$waiting = null
+		$mail_box = null
+		# cleanup all handles
+		$msg_handlers = null
+		$call_handlers = null
+
 module.exports =
 	Actor: Actor
