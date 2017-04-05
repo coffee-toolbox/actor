@@ -47,6 +47,7 @@ $values: -> [v] | []
 
 `Actor` has following method for Sync call and Async Call:
 
+### Start an actor
 `$start: (reg)-> ignored`
 
 Start the Actor by waiting on async messages.
@@ -64,11 +65,12 @@ version reports the sending and receving of the message for debugging.
 # ReceiveReg :: { MsgType: MsgHandler }
 # CallReg :: { CallName: CallHandler }
 # MsgType :: string
-# CallNmae :: string
+# CallName :: string
 # MsgHandler :: (from, msg)=> ignored
 # 	There should be a `@$next()` in MsgHandler to handle next Message
 # CallHandler :: (args...)=> any
 ```
+### Receive message:
 `$next: -> ignored`
 
 Wait for the next async message and handler it by registered handler.
@@ -76,15 +78,28 @@ Wait for the next async message and handler it by registered handler.
 Usually, there's only one `$next` waiting for message. Two or more is likely
 to be a memory leak. There will be a error reporting that.
 
+### Calling
 `$call: (name, args...)-> any`
 
 Invoke methods registered with `reg.call` in `$start`
 
+### Send message
 `$send_to: (target, type, value)-> ignored`
 
-Send message to target.
 The message would be handled by functions registered with `reg.receive` in
 `$start`. The function is asynchronously called once `$next()` is called.
+
+### Monitor the target.
+`$monitor: (target)-> ref`
+
+When `target` is terminated, a message of
+    DOWN, reason
+will be send from target.
+The `ref` is used to unmonitor.
+
+### Unmonitor by ref
+`$unmonitor: (ref)-> ignored`
+Clean out the monitor
 
 ## Other
 A `config` object can be passed to the Actor's constructor.
@@ -114,6 +129,7 @@ class Adder extends Actor
 		setTimeout =>
 			@$send_to from, 'answer',  msg.a + msg.b
 			# @$next() # to handle next msg after answering
+			@$terminate()
 		, 500
 		@$next() # to handle next msg immediately
 
@@ -125,12 +141,17 @@ class Asker extends Actor
 				answer: (from, v)=>
 					@logger.log v
 					@$next()
+				DOWN: (from, v)=>
+					@logger.log 'terminating:', v
+					@$terminate()
 
 asker = new Asker()
 adder = new Adder()
+ref = asker.$monitor adder
 asker.$send_to adder, 'async_add',
 	a: 3
 	b: 5
+# asker.$unmonitor ref # to unmonitor
 asker.logger.log adder.$call 'sync_add', 4, 6
 
 ###
@@ -141,6 +162,10 @@ Adder <= Asker:
 Adder => Asker:
   answer
  : 8
+Adder => Asker:
+  DOWN
+ : normal
 Asker 8
+Asker terminating: normal
 ###
 ```

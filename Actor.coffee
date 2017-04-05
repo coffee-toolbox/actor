@@ -36,7 +36,34 @@ class Actor extends Dict
 		@$msg_handlers = null
 		@$call_handlers = null
 		@$mail_box = []
+		@$monitors = new Map()
+		@$monitoring = new Map()
 		@$waited_next = null
+
+	# when `t` is down, `this` receive a msg:
+	#     DOWN, reason
+	# from `t`
+	$monitor: (t)->
+		ref = Symbol("#{@$id} monitoring #{t.$id}")
+		if not t.$monitors?
+			@logger.warn 'monitoring a terminated actor'
+			null
+		else if not @$monitors?
+			@logger.warn 'a terminated actor monitoring'
+			null
+		else
+			t.$monitors.set ref, this
+			@$monitoring.set ref, t
+			ref
+
+	$unmonitor: (ref)->
+		if @$monitoring?
+			t = @$monitoring.get ref
+			if t?
+				@logger.assert t instanceof Actor
+				@$monitoring.delete ref
+				if t.$monitors?
+					t.$monitors.delete ref
 
 	# reg ::
 	#	'receive': ReceiveReg
@@ -44,7 +71,7 @@ class Actor extends Dict
 	# ReceiveReg :: { MsgType: MsgHandler }
 	# CallReg :: { CallName: CallHandler }
 	# MsgType :: string
-	# CallNmae :: string
+	# CallName :: string
 	# MsgHandler :: (from, msg)=> ignored
 	#   There should be a `@$next()` in MsgHandler to handle next Message
 	# CallHandler :: (args...)=> any
@@ -91,22 +118,34 @@ class Actor extends Dict
 	$send_to: (t, type, value)->
 		@logger.assert type?, 'msg type is not defined'
 		@logger.debug "=> #{t.$id}:\n  #{type}\n :", value
-		t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
-		t.$mail_box.push =>
-			t.logger.debug "<= #{@$id}:\n  #{type}\n :", value
-			t.$msg_handlers[type] this, value
+		if t.$mail_box?
+			t.$mail_box.push =>
+				t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
+				t.logger.debug "<= #{@$id}:\n  #{type}\n :", value
+				t.$msg_handlers[type] this, value
+		else
+			@logger.warn 'sending to a terminated actor', type, value
+
 		if t.$waited_next?
 			f = t.$waited_next
 			t.$waited_next = null
 			f()
 
-	$terminate: ->
+	$terminate: (reason)->
+		reason ?= 'normal'
 		# flush all messages
 		@$waited_next = null
 		@$mail_box = null
 		# cleanup all handles
 		@$msg_handlers = null
 		@$call_handlers = null
+		# sending out messages
+		@$monitoring.forEach (t, ref)=>
+			@$unmonitor ref
+		@$monitors.forEach (t, ref)=>
+			@$send_to t, 'DOWN', reason
+		@$monitors = null
+
 
 module.exports =
 	Actor: Actor
