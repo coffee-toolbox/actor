@@ -36,7 +36,7 @@ class Actor extends Dict
 		@$msg_handlers = null
 		@$call_handlers = null
 		@$mail_box = []
-		@$waiting = []
+		@$waited_next = null
 
 	# reg ::
 	#	'receive': ReceiveReg
@@ -57,6 +57,7 @@ class Actor extends Dict
 		.forEach (msg_handler)=>
 			unless msg_handler instanceof Function
 				@logger.error 'invalid receive_reg', msg_handler
+
 		@$msg_handlers = reg.receive
 
 		reg.call ?= {}
@@ -68,19 +69,19 @@ class Actor extends Dict
 				@logger.error 'invalid call_reg', call_handler
 
 		@$call_handlers = reg.call
+
 		@$next()
 
 	$next: ->
 		read_mail = =>
 			f = @$mail_box.shift()
-			@logger.assert f?
 			Promise.resolve().then f
 		if @$mail_box.length > 0
 			read_mail()
-		else if @$waiting.length > 0
-			@logger.error 'repeated $next(). Memory leak?'
+		else if @$waited_next?
+			@logger.error 'repeated $next()!'
 		else
-			@$waiting.push ->
+			@$waited_next = ->
 				read_mail()
 
 	$call: (name, args...)->
@@ -93,14 +94,15 @@ class Actor extends Dict
 		t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
 		t.$mail_box.push =>
 			t.logger.debug "<= #{@$id}:\n  #{type}\n :", value
-			t.logger.assert t.$msg_handlers[type]?, type, 'not registered'
 			t.$msg_handlers[type] this, value
-		if t.$waiting.length > 0
-			t.$waiting.shift()()
+		if t.$waited_next?
+			f = t.$waited_next
+			t.$waited_next = null
+			f()
 
 	$terminate: ->
 		# flush all messages
-		$waiting = null
+		$waited_next = null
 		$mail_box = null
 		# cleanup all handles
 		$msg_handlers = null
