@@ -102,11 +102,11 @@ class Actor extends Dict
 
 	$terminate: ->
 		# flush all messages
-		$waited_next = null
-		$mail_box = null
+		@$waited_next = null
+		@$mail_box = null
 		# cleanup all handles
-		$msg_handlers = null
-		$call_handlers = null
+		@$msg_handlers = null
+		@$call_handlers = null
 
 module.exports =
 	Actor: Actor
