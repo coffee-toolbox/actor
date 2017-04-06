@@ -41,7 +41,7 @@ class Actor extends Dict
 		@$waited_next = null
 
 	# when `t` is down, `this` receive a msg:
-	#     DOWN, reason
+	#     DOWN, {ref: ref, reason: reason}
 	# from `t`
 	$monitor: (t)->
 		ref = Symbol("#{@$id} monitoring #{t.$id}")
@@ -143,7 +143,7 @@ class Actor extends Dict
 		@$monitoring.forEach (t, ref)=>
 			@$unmonitor ref
 		@$monitors.forEach (t, ref)=>
-			@$send_to t, 'DOWN', reason
+			@$send_to t, 'DOWN', {ref: ref, reason: reason}
 		@$monitors = null
 
 

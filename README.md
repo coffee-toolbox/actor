@@ -93,7 +93,7 @@ The message would be handled by functions registered with `reg.receive` in
 `$monitor: (target)-> ref`
 
 When `target` is terminated, a message of
-    DOWN, reason
+    DOWN, {ref: ref, reason: reason}
 will be send from target.
 The `ref` is used to unmonitor.
 
@@ -164,8 +164,8 @@ Adder => Asker:
  : 8
 Adder => Asker:
   DOWN
- : normal
+ : { ref: Symbol(Asker monitoring Adder), reason: 'normal' }
 Asker 8
-Asker terminating: normal
+Asker terminating: { ref: Symbol(Asker monitoring Adder), reason: 'normal' }
 ###
 ```
